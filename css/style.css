@@ -5121,3 +5121,25 @@ button:active,
     gap: 0.4rem;
   }
 }
+
+@media (max-width: 640px) {
+  .category-tabs-strip {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 0.5rem;
+    overflow: visible;
+    margin-right: 0;
+    padding: 0 0 0.6rem;
+  }
+
+  .cat-pill-tab {
+    width: 100%;
+    min-width: 0;
+    min-height: 42px;
+    padding: 0.55rem 0.4rem;
+    overflow-wrap: anywhere;
+    white-space: normal;
+    line-height: 1.2;
+    text-align: center;
+  }
+}
