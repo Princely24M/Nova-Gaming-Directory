@@ -10,6 +10,15 @@ NOVA is a responsive gaming directory for discovering curated games by title, ge
 - Open game details and save favourites.
 - Keep favourites, filters, and theme preferences in browser storage.
 - Use the responsive navigation and theme controls on mobile or desktop.
+- Explore a cinematic hero with slow image movement, parallax, and ambient cyan/violet particles.
+- See subtle pointer-driven card tilt, hover lighting, and staggered result entrances on supported devices.
+- Navigate with active-section feedback and one-time scroll reveals.
+
+## Motion and accessibility
+
+Motion is implemented with CSS, vanilla JavaScript, the Web Animations API, `IntersectionObserver`, and an HTML canvas. The particle field is capped at 30 frames per second and pauses while the page is hidden. Card tilt is limited to fine-pointer devices, and result animations are debounced.
+
+NOVA respects `prefers-reduced-motion`: it disables the particle field, scroll reveals, hero auto-advance, and nonessential animation while keeping all content and controls available. No animation frameworks or runtime dependencies are required.
 
 ## Run locally
 
@@ -58,6 +67,9 @@ They are saved in your browser's `localStorage` on the device and browser you us
 
 ### Does NOVA need a backend or dependencies?
 No. It is a static HTML, CSS, and JavaScript project with no build step. A local HTTP server is needed for development because the catalog is loaded as JSON.
+
+### Can I turn off animations?
+NOVA follows your operating system or browser's reduced-motion preference and disables nonessential motion automatically.
 
 ### Do all images work offline?
 No. Game artwork uses external image URLs. The local logos and background video are included in the repository, but externally hosted artwork needs an internet connection.
