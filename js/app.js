@@ -95,11 +95,15 @@ const elements = {
 const HERO_IMAGE_OPACITY = '0.42';
 const AUTO_SLIDE_DELAY = 5000;
 let autoSlideTimer = null;
+let motionObserver = null;
+let resultsMotionTimer = null;
+const reducedMotionQuery = window.matchMedia?.('(prefers-reduced-motion: reduce)');
 
 document.addEventListener('DOMContentLoaded', initApp);
 
 function initApp() {
   initTheme();
+  initMotionEffects();
   bindEvents();
   loadPreferences();
   loadFavourites();
@@ -108,6 +112,237 @@ function initApp() {
   updateFavBadges();
   startHeroAutoSlide();
   initContactVideo();
+}
+
+function initMotionEffects() {
+  if (reducedMotionQuery?.matches) return;
+
+  initAmbientParticles();
+  initHeroParallax();
+  initCardTilt();
+
+  if (!('IntersectionObserver' in window)) return;
+
+  document.documentElement.classList.add('motion-ready');
+  motionObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (!entry.isIntersecting) return;
+      entry.target.classList.add('is-visible');
+      motionObserver.unobserve(entry.target);
+    });
+  }, { threshold: 0.12, rootMargin: '0px 0px -36px 0px' });
+
+  observeRevealElements(document);
+  initActiveNavigation();
+}
+
+function observeRevealElements(root) {
+  if (!motionObserver) return;
+
+  root.querySelectorAll(
+    '.section-headline-row, .editorial-feature-grid, .social-proof-strip, .asymm-gallery, .filter-panel, .about-grid, .faq-container, .contact-grid, .rec-card'
+  ).forEach((element) => {
+    if (element.classList.contains('motion-reveal')) return;
+    element.classList.add('motion-reveal');
+    motionObserver.observe(element);
+  });
+}
+
+function initActiveNavigation() {
+  const navLinks = [...document.querySelectorAll('.main-nav a[href^="#"], .mobile-menu a[href^="#"]')];
+  const sections = [...document.querySelectorAll('main section[id]')];
+  const linksBySection = new Map();
+
+  navLinks.forEach((link) => {
+    const sectionId = link.getAttribute('href').slice(1);
+    if (!linksBySection.has(sectionId)) linksBySection.set(sectionId, []);
+    linksBySection.get(sectionId).push(link);
+  });
+
+  const sectionObserver = new IntersectionObserver((entries) => {
+    const activeEntry = entries
+      .filter((entry) => entry.isIntersecting)
+      .sort((first, second) => second.intersectionRatio - first.intersectionRatio)[0];
+    if (!activeEntry) return;
+
+    navLinks.forEach((link) => {
+      const isActive = link.getAttribute('href') === `#${activeEntry.target.id}`;
+      link.classList.toggle('is-active', isActive);
+      if (isActive) link.setAttribute('aria-current', 'location');
+      else link.removeAttribute('aria-current');
+    });
+  }, { threshold: [0.15, 0.35, 0.6], rootMargin: '-18% 0px -62% 0px' });
+
+  sections.forEach((section) => {
+    if (linksBySection.has(section.id)) sectionObserver.observe(section);
+  });
+}
+
+function initAmbientParticles() {
+  const canvas = document.getElementById('ambientCanvas');
+  const context = canvas?.getContext('2d', { alpha: true });
+  if (!canvas || !context) return;
+
+  let width = 0;
+  let height = 0;
+  let pixelRatio = 1;
+  let frameId = 0;
+  let lastFrameTime = 0;
+  let particles = [];
+
+  function resizeCanvas() {
+    width = window.innerWidth;
+    height = window.innerHeight;
+    pixelRatio = Math.min(window.devicePixelRatio || 1, 1.5);
+    canvas.width = Math.round(width * pixelRatio);
+    canvas.height = Math.round(height * pixelRatio);
+    context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+
+    const particleCount = width < 640 ? 10 : Math.min(28, Math.max(16, Math.round(width / 52)));
+    particles = Array.from({ length: particleCount }, (_, index) => ({
+      x: Math.random() * width,
+      y: Math.random() * height,
+      radius: 0.8 + Math.random() * 1.4,
+      speedX: (Math.random() - 0.5) * 0.24,
+      speedY: -0.08 - Math.random() * 0.2,
+      phase: Math.random() * Math.PI * 2,
+      tint: index % 5 === 0 ? '139, 92, 246' : '0, 229, 255',
+    }));
+  }
+
+  function drawParticles(timestamp) {
+    if (document.hidden) {
+      frameId = 0;
+      return;
+    }
+
+    frameId = requestAnimationFrame(drawParticles);
+    if (timestamp - lastFrameTime < 33) return;
+    const delta = lastFrameTime ? Math.min((timestamp - lastFrameTime) / 16.67, 2) : 1;
+    lastFrameTime = timestamp;
+    context.clearRect(0, 0, width, height);
+
+    particles.forEach((particle) => {
+      particle.x += particle.speedX * delta;
+      particle.y += particle.speedY * delta;
+      if (particle.y < -4) particle.y = height + 4;
+      if (particle.x < -4) particle.x = width + 4;
+      if (particle.x > width + 4) particle.x = -4;
+
+      const pulse = 0.5 + Math.sin(timestamp * 0.0007 + particle.phase) * 0.18;
+      context.beginPath();
+      context.fillStyle = `rgba(${particle.tint}, ${pulse})`;
+      context.shadowColor = `rgba(${particle.tint}, 0.55)`;
+      context.shadowBlur = 7;
+      context.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
+      context.fill();
+    });
+
+    context.shadowBlur = 0;
+  }
+
+  function startParticles() {
+    if (!frameId && !document.hidden) frameId = requestAnimationFrame(drawParticles);
+  }
+
+  function stopParticles() {
+    if (frameId) cancelAnimationFrame(frameId);
+    frameId = 0;
+    context.clearRect(0, 0, width, height);
+  }
+
+  resizeCanvas();
+  startParticles();
+  window.addEventListener('resize', resizeCanvas, { passive: true });
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) stopParticles();
+    else startParticles();
+  });
+}
+
+function initHeroParallax() {
+  const hero = elements.heroFrame;
+  const background = hero?.querySelector('.hero-bg-media');
+  if (!hero || !background || !window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+
+  let frameId = 0;
+  let offsetX = 0;
+  let offsetY = 0;
+
+  hero.addEventListener('pointermove', (event) => {
+    if (event.pointerType !== 'mouse') return;
+    const bounds = hero.getBoundingClientRect();
+    offsetX = ((event.clientX - bounds.left) / bounds.width - 0.5) * 12;
+    offsetY = ((event.clientY - bounds.top) / bounds.height - 0.5) * 8;
+
+    if (frameId) return;
+    frameId = requestAnimationFrame(() => {
+      background.style.setProperty('--hero-shift-x', `${offsetX}px`);
+      background.style.setProperty('--hero-shift-y', `${offsetY}px`);
+      frameId = 0;
+    });
+  }, { passive: true });
+
+  hero.addEventListener('pointerleave', () => {
+    background.style.setProperty('--hero-shift-x', '0px');
+    background.style.setProperty('--hero-shift-y', '0px');
+  }, { passive: true });
+}
+
+function initCardTilt() {
+  if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+
+  [elements.resultsContainer, elements.favouritesContainer].filter(Boolean).forEach((container) => {
+    container.addEventListener('pointermove', (event) => {
+      if (event.pointerType !== 'mouse' || !(event.target instanceof Element)) return;
+      const card = event.target.closest('.experience-card, .favorite-card');
+      if (!card) return;
+
+      if (event.target.closest('button, a, input, select, textarea')) {
+        card.style.setProperty('--card-tilt-x', '0deg');
+        card.style.setProperty('--card-tilt-y', '0deg');
+        card.classList.remove('card-tilting');
+        return;
+      }
+
+      const bounds = card.getBoundingClientRect();
+      const x = Math.max(0, Math.min(1, (event.clientX - bounds.left) / bounds.width));
+      const y = Math.max(0, Math.min(1, (event.clientY - bounds.top) / bounds.height));
+      card.style.setProperty('--card-tilt-x', `${(0.5 - y) * 3}deg`);
+      card.style.setProperty('--card-tilt-y', `${(x - 0.5) * 3}deg`);
+      card.style.setProperty('--card-shine-x', `${x * 100}%`);
+      card.style.setProperty('--card-shine-y', `${y * 100}%`);
+      card.classList.add('card-tilting');
+    }, { passive: true });
+
+    container.addEventListener('pointerout', (event) => {
+      if (!(event.target instanceof Element)) return;
+      const card = event.target.closest('.experience-card, .favorite-card');
+      if (!card || card.contains(event.relatedTarget)) return;
+      card.style.setProperty('--card-tilt-x', '0deg');
+      card.style.setProperty('--card-tilt-y', '0deg');
+      card.classList.remove('card-tilting');
+    }, { passive: true });
+  });
+}
+
+function animateResultCards(container) {
+  if (reducedMotionQuery?.matches || !container?.animate) return;
+  window.clearTimeout(resultsMotionTimer);
+  resultsMotionTimer = window.setTimeout(() => {
+    [...container.querySelectorAll('.experience-card')].slice(0, 8).forEach((card, index) => {
+      const animation = card.animate([
+        { opacity: 0, transform: 'translateY(12px) scale(0.99)' },
+        { opacity: 1, transform: 'translateY(0) scale(1)' },
+      ], {
+        duration: 260,
+        delay: index * 22,
+        easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
+        fill: 'both',
+      });
+      animation.onfinish = () => animation.cancel();
+    });
+  }, 90);
 }
 
 function bindEvents() {
@@ -309,6 +544,7 @@ function updateHeaderState() {
 
 function startHeroAutoSlide() {
   stopHeroAutoSlide();
+  if (reducedMotionQuery?.matches) return;
   autoSlideTimer = setInterval(() => {
     const nextIdx = (state.heroIndex + 1) % heroSlides.length;
     changeHeroSlide(nextIdx);
@@ -458,6 +694,7 @@ function renderExperiences() {
 
   if (elements.resultsContainer) {
     elements.resultsContainer.innerHTML = cardsMarkup;
+    animateResultCards(elements.resultsContainer);
   }
 }
 
@@ -485,6 +722,7 @@ function renderRecommendedGames() {
       </article>
     `)
     .join('');
+  observeRevealElements(elements.recTrack);
 }
 
 function filterExperiences() {
@@ -825,6 +1063,7 @@ function renderFavourites() {
     .join('');
 
   elements.favouritesContainer.innerHTML = favouritesMarkup;
+  observeRevealElements(elements.favouritesContainer);
 }
 
 function openExperienceModal(id) {

@@ -26,6 +26,7 @@
 </head>
 
 <body>
+  <canvas id="ambientCanvas" class="ambient-canvas" aria-hidden="true"></canvas>
   <div id="top"></div>
 
   <!-- SITE HEADER -->
@@ -147,7 +148,13 @@
         <div class="floating-search-bar" role="search">
           <div class="search-cell search-cell-input">
             <div class="cell-content">
-              <label for="searchInput">Game or Keyword</label>
+              <label for="searchInput">
+                <svg class="search-glyph" viewBox="0 0 20 20" aria-hidden="true">
+                  <circle cx="8.5" cy="8.5" r="5.5"></circle>
+                  <path d="m12.5 12.5 4 4"></path>
+                </svg>
+                Game or Keyword
+              </label>
               <input id="searchInput" type="search" placeholder="Search by title, genre or tag..."
                 aria-label="Search games" />
             </div>

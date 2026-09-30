@@ -4787,31 +4787,6 @@ summary:focus-visible {
   animation: novaRiseIn 560ms ease-out both;
 }
 
-.experience-card,
-.favorite-card {
-  animation: novaRiseIn 300ms ease-out both;
-}
-
-.experience-card:nth-child(2),
-.favorite-card:nth-child(2) {
-  animation-delay: 35ms;
-}
-
-.experience-card:nth-child(3),
-.favorite-card:nth-child(3) {
-  animation-delay: 70ms;
-}
-
-.experience-card:nth-child(4),
-.favorite-card:nth-child(4) {
-  animation-delay: 105ms;
-}
-
-.experience-card:nth-child(5),
-.favorite-card:nth-child(5) {
-  animation-delay: 140ms;
-}
-
 @media (max-width: 900px) {
   .mobile-menu {
     display: flex;
@@ -4832,4 +4807,261 @@ summary:focus-visible {
     opacity: 1;
     visibility: visible;
   }
+}
+
+.ambient-canvas {
+  position: fixed;
+  z-index: 0;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.34;
+  pointer-events: none;
+}
+
+[data-theme="light"] .ambient-canvas {
+  opacity: 0.1;
+}
+
+main,
+.site-footer {
+  position: relative;
+  z-index: 1;
+}
+
+.hero-bg-media {
+  overflow: hidden;
+  transform: scale(1.04) translate3d(var(--hero-shift-x, 0px), var(--hero-shift-y, 0px), 0);
+  transition: transform 900ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  will-change: transform;
+}
+
+.hero-bg-img {
+  animation: novaCinematicPan 32s ease-in-out infinite alternate;
+}
+
+.hero-bg-media::after {
+  position: absolute;
+  inset: -20%;
+  background:
+    radial-gradient(ellipse at 68% 42%, rgba(0, 229, 255, 0.13), transparent 34%),
+    radial-gradient(ellipse at 86% 70%, rgba(139, 92, 246, 0.12), transparent 34%);
+  background-size: 150% 150%;
+  content: "";
+  mix-blend-mode: screen;
+  pointer-events: none;
+  animation: novaLightDrift 24s ease-in-out infinite alternate;
+}
+
+.hero-card-frame::after {
+  position: absolute;
+  z-index: 2;
+  top: 2rem;
+  right: 3rem;
+  color: rgba(248, 250, 252, 0.66);
+  content: "NOVA / GAME SELECTED";
+  font-family: var(--font-body);
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.hero-eyebrow,
+.hero-headline,
+.hero-lead-text,
+.hero-cta-wrap {
+  animation: novaTextReveal 700ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.hero-headline { animation-delay: 80ms; }
+.hero-lead-text { animation-delay: 150ms; }
+.hero-cta-wrap { animation-delay: 220ms; }
+
+@keyframes novaCinematicPan {
+  from { transform: scale(1.02) translate3d(-0.3%, 0, 0); }
+  to { transform: scale(1.1) translate3d(0.3%, -0.4%, 0); }
+}
+
+@keyframes novaLightDrift {
+  from { background-position: 0% 40%, 100% 60%; opacity: 0.48; }
+  to { background-position: 100% 60%, 0% 40%; opacity: 0.86; }
+}
+
+@keyframes novaTextReveal {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.main-nav a.is-active {
+  color: var(--accent-cyan);
+  text-shadow: 0 0 14px rgba(0, 229, 255, 0.24);
+}
+
+.main-nav a.is-active::after { transform: scaleX(1); }
+
+.mobile-menu a.is-active { color: var(--accent-cyan) !important; }
+
+.search-cell-input .cell-content label {
+  display: flex;
+  align-items: center;
+  transition: color 180ms ease;
+}
+
+.search-glyph {
+  width: 15px;
+  height: 15px;
+  margin-right: 0.5rem;
+  overflow: visible;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-width: 1.7;
+  transition: transform 180ms ease, color 180ms ease;
+}
+
+.search-cell-input:focus-within .cell-content label { color: var(--accent-cyan); }
+
+.search-cell-input:focus-within .search-glyph {
+  color: var(--accent-cyan);
+  transform: rotate(-12deg) scale(1.08);
+}
+
+.cat-pill-tab { position: relative; overflow: hidden; }
+
+.cat-pill-tab::after {
+  position: absolute;
+  right: 0.6rem;
+  bottom: 0.2rem;
+  left: 0.6rem;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--accent-cyan);
+  content: "";
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform 180ms ease;
+}
+
+.cat-pill-tab.active::after { transform: scaleX(1); }
+
+.experience-card,
+.favorite-card {
+  position: relative;
+  animation: none;
+  transform: perspective(900px) rotateX(var(--card-tilt-x, 0deg)) rotateY(var(--card-tilt-y, 0deg)) translateY(0);
+  transform-style: preserve-3d;
+  transition: transform 220ms cubic-bezier(0.2, 0.7, 0.2, 1), border-color 220ms ease, box-shadow 220ms ease;
+}
+
+.experience-card::after,
+.favorite-card::after {
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(360px circle at var(--card-shine-x, 50%) var(--card-shine-y, 50%), rgba(0, 229, 255, 0.12), transparent 48%);
+  content: "";
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 220ms ease;
+}
+
+.experience-card:hover,
+.favorite-card:hover {
+  border-color: rgba(0, 229, 255, 0.42);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.34), 0 0 16px rgba(0, 229, 255, 0.08);
+  transform: perspective(900px) rotateX(var(--card-tilt-x, 0deg)) rotateY(var(--card-tilt-y, 0deg)) translateY(-3px);
+}
+
+.experience-card.card-tilting,
+.favorite-card.card-tilting {
+  border-color: rgba(0, 229, 255, 0.68);
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.4), 0 0 22px rgba(0, 229, 255, 0.12);
+  transform: perspective(900px) rotateX(var(--card-tilt-x, 0deg)) rotateY(var(--card-tilt-y, 0deg)) translateY(-4px);
+  will-change: transform;
+}
+
+.experience-card.card-tilting::after,
+.favorite-card.card-tilting::after { opacity: 1; }
+
+.card-content { transition: transform 220ms ease; }
+
+.experience-card.card-tilting .card-content,
+.favorite-card.card-tilting .card-content { transform: translateY(-2px); }
+
+html.motion-ready .motion-reveal {
+  opacity: 0;
+  transform: translate3d(0, 18px, 0) scale(0.99);
+  transition: opacity 620ms cubic-bezier(0.2, 0.7, 0.2, 1), transform 620ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  will-change: opacity, transform;
+}
+
+html.motion-ready .motion-reveal.is-visible {
+  opacity: 1;
+  transform: translate3d(0, 0, 0) scale(1);
+  will-change: auto;
+}
+
+button,
+.header-cta-btn,
+.mobile-cta-btn,
+.hero-pill-btn,
+.primary-btn,
+.secondary-btn,
+.pill-btn-dark,
+.carousel-btn { transition-timing-function: cubic-bezier(0.2, 0.7, 0.2, 1); }
+
+button:active,
+.header-cta-btn:active,
+.mobile-cta-btn:active,
+.hero-pill-btn:active,
+.primary-btn:active,
+.secondary-btn:active,
+.pill-btn-dark:active,
+.carousel-btn:active { transform: translateY(0) scale(0.98); }
+
+@media (hover: none), (pointer: coarse) {
+  .experience-card,
+  .favorite-card {
+    transform: none;
+    transform-style: flat;
+    will-change: auto;
+  }
+
+  .experience-card::after,
+  .favorite-card::after { display: none; }
+}
+
+@media (max-width: 640px) {
+  .hero-card-frame::after {
+    top: 1.4rem;
+    right: 1.5rem;
+    font-size: 0.55rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto !important; }
+  .ambient-canvas { display: none; }
+
+  html.motion-ready .motion-reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+    will-change: auto;
+  }
+
+  .hero-bg-img,
+  .hero-bg-media::after,
+  .hero-eyebrow,
+  .hero-headline,
+  .hero-lead-text,
+  .hero-cta-wrap,
+  .experience-card,
+  .favorite-card { animation: none !important; }
+
+  .hero-bg-media,
+  .experience-card,
+  .favorite-card,
+  .card-content { transform: none !important; transition: none !important; }
 }
