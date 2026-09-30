@@ -5065,3 +5065,59 @@ button:active,
   .favorite-card,
   .card-content { transform: none !important; transition: none !important; }
 }
+
+@media (max-width: 319px) {
+  :root {
+    --container-width: calc(100% - 24px);
+  }
+
+  body {
+    min-width: 0;
+  }
+
+  .header-inner {
+    gap: 0.5rem;
+  }
+
+  .theme-toggle-btn,
+  .nav-toggle {
+    width: 2.3rem;
+    height: 2.3rem;
+  }
+
+  .hero-card-frame {
+    min-height: 460px;
+    padding: 3.25rem 1rem 1.2rem;
+  }
+
+  .hero-card-frame::after {
+    right: 1rem;
+    font-size: 0.5rem;
+  }
+
+  .hero-headline {
+    font-size: 1.8rem;
+  }
+
+  .hero-footer-bar {
+    gap: 0.7rem;
+  }
+
+  .scroll-now-indicator {
+    gap: 0.35rem;
+    font-size: 0.58rem;
+  }
+
+  .scroll-line {
+    width: 12px;
+  }
+
+  .modal {
+    padding: 0.25rem;
+  }
+
+  .modal-actions-right {
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+    gap: 0.4rem;
+  }
+}
